@@ -4,22 +4,21 @@
 #include <memory>
 
 #include "Cutter.h"
+#include "CutterDockWidget.h"
 
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
-#include <QDockWidget>
 
 class MainWindow;
 class QTreeWidgetItem;
 
-namespace Ui
-{
-    class StringsWidget;
+namespace Ui {
+class StringsWidget;
 }
 
 class StringsModel: public QAbstractListModel
 {
-Q_OBJECT
+    Q_OBJECT
 
 private:
     QList<StringDescription> *strings;
@@ -44,7 +43,7 @@ public:
 
 class StringsSortFilterProxyModel : public QSortFilterProxyModel
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     StringsSortFilterProxyModel(StringsModel *source_model, QObject *parent = 0);
@@ -55,12 +54,12 @@ protected:
 };
 
 
-class StringsWidget : public QDockWidget
+class StringsWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit StringsWidget(QWidget *parent = nullptr);
+    explicit StringsWidget(MainWindow *main, QAction *action = nullptr);
     ~StringsWidget();
 
 private slots:

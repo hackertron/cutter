@@ -5,9 +5,9 @@
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
-#include <QDockWidget>
 
 #include "Cutter.h"
+#include "CutterDockWidget.h"
 
 class MainWindow;
 class QTreeWidgetItem;
@@ -52,22 +52,26 @@ protected:
 
 
 
-namespace Ui
-{
-    class FlagsWidget;
+namespace Ui {
+class FlagsWidget;
 }
 
-class FlagsWidget : public QDockWidget
+class FlagsWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit FlagsWidget(MainWindow *main, QWidget *parent = 0);
+    explicit FlagsWidget(MainWindow *main, QAction *action = nullptr);
     ~FlagsWidget();
 
 private slots:
     void on_flagsTreeView_doubleClicked(const QModelIndex &index);
     void on_flagspaceCombo_currentTextChanged(const QString &arg1);
+
+    void on_actionRename_triggered();
+    void on_actionDelete_triggered();
+
+    void showContextMenu(const QPoint &pt);
 
     void flagsChanged();
     void refreshFlagspaces();

@@ -7,8 +7,8 @@
 #include "MainWindow.h"
 #include "utils/Helpers.h"
 
-CommentsWidget::CommentsWidget(MainWindow *main, QWidget *parent) :
-    QDockWidget(parent),
+CommentsWidget::CommentsWidget(MainWindow *main, QAction *action) :
+    CutterDockWidget(main, action),
     ui(new Ui::CommentsWidget),
     main(main)
 {
@@ -35,24 +35,29 @@ CommentsWidget::CommentsWidget(MainWindow *main, QWidget *parent) :
 
 CommentsWidget::~CommentsWidget() {}
 
-void CommentsWidget::on_commentsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int)
+void CommentsWidget::on_commentsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
+    if (column < 0)
+        return;
+
     // Get offset and name of item double clicked
     CommentDescription comment = item->data(0, Qt::UserRole).value<CommentDescription>();
-    CutterCore::getInstance()->seek(comment.offset);
+    Core()->seek(comment.offset);
 }
 
-void CommentsWidget::on_nestedCmtsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int)
+void CommentsWidget::on_nestedCmtsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
+    if (column < 0)
+        return;
+
     // don't react on top-level items
-    if (item->parent() == nullptr)
-    {
+    if (item->parent() == nullptr) {
         return;
     }
 
     // Get offset and name of item double clicked
     CommentDescription comment = item->data(0, Qt::UserRole).value<CommentDescription>();
-    CutterCore::getInstance()->seek(comment.offset);
+    Core()->seek(comment.offset);
 
 }
 
@@ -74,13 +79,10 @@ void CommentsWidget::showTitleContextMenu(const QPoint &pt)
     menu->addAction(ui->actionHorizontal);
     menu->addAction(ui->actionVertical);
 
-    if (ui->tabWidget->currentIndex() == 0)
-    {
+    if (ui->tabWidget->currentIndex() == 0) {
         ui->actionHorizontal->setChecked(true);
         ui->actionVertical->setChecked(false);
-    }
-    else
-    {
+    } else {
         ui->actionVertical->setChecked(true);
         ui->actionHorizontal->setChecked(false);
     }
@@ -105,15 +107,11 @@ void CommentsWidget::on_actionVertical_triggered()
 
 void CommentsWidget::resizeEvent(QResizeEvent *event)
 {
-    if (main->responsive && isVisible())
-    {
-        if (event->size().width() >= event->size().height())
-        {
+    if (main->responsive && isVisible()) {
+        if (event->size().width() >= event->size().height()) {
             // Set horizontal view (list)
             on_actionHorizontal_triggered();
-        }
-        else
-        {
+        } else {
             // Set vertical view (Tree)
             on_actionVertical_triggered();
         }
@@ -147,12 +145,11 @@ QMap<QString, QList<QList<QString>>> CutterCore::getNestedComments()
 void CommentsWidget::refreshTree()
 {
     ui->nestedCmtsTreeWidget->clear();
-    QList<CommentDescription> comments = CutterCore::getInstance()->getAllComments("CCu");
+    QList<CommentDescription> comments = Core()->getAllComments("CCu");
     QMap<QString, QList<CommentDescription>> nestedComments;
 
-    for (CommentDescription comment : comments)
-    {
-        QString fcn_name = CutterCore::getInstance()->cmdFunctionAt(comment.offset);
+    for (CommentDescription comment : comments) {
+        QString fcn_name = Core()->cmdFunctionAt(comment.offset);
         QTreeWidgetItem *item = new QTreeWidgetItem();
         item->setText(0, RAddressString(comment.offset));
         item->setText(1, fcn_name);
@@ -166,12 +163,10 @@ void CommentsWidget::refreshTree()
 
     // Add nested comments
     ui->nestedCmtsTreeWidget->clear();
-    for (auto functionName : nestedComments.keys())
-    {
+    for (auto functionName : nestedComments.keys()) {
         QTreeWidgetItem *item = new QTreeWidgetItem(ui->nestedCmtsTreeWidget);
         item->setText(0, functionName);
-        for (CommentDescription comment : nestedComments.value(functionName))
-        {
+        for (CommentDescription comment : nestedComments.value(functionName)) {
             QTreeWidgetItem *it = new QTreeWidgetItem();
             it->setText(0, RAddressString(comment.offset));
             it->setText(1, comment.name);

@@ -4,18 +4,18 @@
 #include <memory>
 
 #include "Cutter.h"
+#include "CutterDockWidget.h"
 
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
-#include <QDockWidget>
 
-namespace Ui
-{
-    class ClassesWidget;
+namespace Ui {
+class ClassesWidget;
 }
 
 class QTreeWidget;
 class QTreeWidgetItem;
+class MainWindow;
 
 
 class ClassesModel: public QAbstractItemModel
@@ -42,7 +42,8 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
 
     void beginReload();
     void endReload();
@@ -65,20 +66,25 @@ protected:
 
 
 
-class ClassesWidget : public QDockWidget
+class ClassesWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit ClassesWidget(QWidget *parent = nullptr);
+    explicit ClassesWidget(MainWindow *main, QAction *action = nullptr);
     ~ClassesWidget();
 
 private slots:
     void on_classesTreeView_doubleClicked(const QModelIndex &index);
 
     void refreshClasses();
+    void flagsChanged();
 
 private:
+    enum class Source { BIN, FLAGS };
+
+    Source getSource();
+
     std::unique_ptr<Ui::ClassesWidget> ui;
 
     ClassesModel *model;

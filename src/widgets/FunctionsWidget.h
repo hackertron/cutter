@@ -5,16 +5,15 @@
 
 #include <QSortFilterProxyModel>
 #include <QTreeView>
-#include <QDockWidget>
 
 #include "Cutter.h"
+#include "CutterDockWidget.h"
 
 class MainWindow;
 class QTreeWidgetItem;
 
-namespace Ui
-{
-    class FunctionsWidget;
+namespace Ui {
+class FunctionsWidget;
 }
 
 
@@ -42,9 +41,11 @@ public:
     static const int FunctionDescriptionRole = Qt::UserRole;
     static const int IsImportRole = Qt::UserRole + 1;
 
-    enum Column { NameColumn = 0, SizeColumn, ImportColumn, OffsetColumn, ColumnCount };
+    enum Column { NameColumn = 0, SizeColumn, ImportColumn, OffsetColumn, NargsColumn, NbbsColumn,
+                  NlocalsColumn, CcColumn, CalltypeColumn, ColumnCount };
 
-    FunctionModel(QList<FunctionDescription> *functions, QSet<RVA> *importAddresses, ut64 *mainAdress, bool nested, QFont defaultFont, QFont highlightFont, QObject *parent = 0);
+    FunctionModel(QList<FunctionDescription> *functions, QSet<RVA> *importAddresses, ut64 *mainAdress,
+                  bool nested, QFont defaultFont, QFont highlightFont, QObject *parent = 0);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &index) const;
@@ -64,7 +65,10 @@ public:
     bool updateCurrentIndex();
 
     void setNested(bool nested);
-    bool isNested()                 { return nested; }
+    bool isNested()
+    {
+        return nested;
+    }
 
 private slots:
     void seekChanged(RVA addr);
@@ -86,12 +90,12 @@ protected:
 
 
 
-class FunctionsWidget : public QDockWidget
+class FunctionsWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit FunctionsWidget(MainWindow *main, QWidget *parent = 0);
+    explicit FunctionsWidget(MainWindow *main, QAction *action = nullptr);
     ~FunctionsWidget();
 
 private slots:

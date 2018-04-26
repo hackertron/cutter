@@ -3,22 +3,21 @@
 
 #include <memory>
 
-#include <QDockWidget>
+#include "CutterDockWidget.h"
 
 class MainWindow;
 class QTreeWidgetItem;
 
-namespace Ui
-{
-    class SymbolsWidget;
+namespace Ui {
+class SymbolsWidget;
 }
 
-class SymbolsWidget : public QDockWidget
+class SymbolsWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit SymbolsWidget(QWidget *parent = 0);
+    explicit SymbolsWidget(MainWindow *main, QAction *action = nullptr);
     ~SymbolsWidget();
 
 private slots:

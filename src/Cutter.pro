@@ -3,7 +3,7 @@ TEMPLATE = app
 TARGET = Cutter
 
 # The application version
-VERSION = 1.3
+VERSION = 1.4
 
 ICON = img/cutter.icns
 
@@ -11,10 +11,16 @@ QT += core gui widgets svg
 QT_CONFIG -= no-pkg-config
 CONFIG += c++11
 
-# You can spawn qmake with qmake "CONFIG+=CUTTER_ENABLE_JUPYTER" to set a variable
-# Or manually edit this file
-#CONFIG += CUTTER_ENABLE_JUPYTER
-#CONFIG += CUTTER_ENABLE_QTWEBENGINE
+!defined(CUTTER_ENABLE_JUPYTER, var)        CUTTER_ENABLE_JUPYTER=true
+equals(CUTTER_ENABLE_JUPYTER, true)         CONFIG += CUTTER_ENABLE_JUPYTER
+
+!defined(CUTTER_ENABLE_QTWEBENGINE, var)    CUTTER_ENABLE_QTWEBENGINE=true
+equals(CUTTER_ENABLE_JUPYTER, true) {
+    equals(CUTTER_ENABLE_QTWEBENGINE, true)  CONFIG += CUTTER_ENABLE_QTWEBENGINE
+}
+
+!defined(CUTTER_BUNDLE_R2_APPBUNDLE, var)   CUTTER_BUNDLE_R2_APPBUNDLE=false
+equals(CUTTER_BUNDLE_R2_APPBUNDLE, true)    CONFIG += CUTTER_BUNDLE_R2_APPBUNDLE
 
 # Define the preprocessor macro to get the application version in our application.
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
@@ -74,6 +80,11 @@ unix:CUTTER_ENABLE_JUPYTER|macx:CUTTER_ENABLE_JUPYTER {
         }
         PKGCONFIG += python3
     }
+}
+
+macx:CUTTER_BUNDLE_R2_APPBUNDLE {
+    message("Using r2 rom AppBundle")
+    DEFINES += MACOS_R2_BUNDLED
 }
 
 SOURCES += \
@@ -141,7 +152,11 @@ SOURCES += \
     widgets/JupyterWidget.cpp \
     utils/PythonAPI.cpp \
     utils/NestedIPyKernel.cpp \
-    dialogs/R2PluginsDialog.cpp
+    dialogs/R2PluginsDialog.cpp \
+    widgets/CutterDockWidget.cpp \
+    widgets/GraphWidget.cpp \
+    utils/JsonTreeItem.cpp \
+    utils/JsonModel.cpp
 
 HEADERS  += \
     Cutter.h \
@@ -208,7 +223,11 @@ HEADERS  += \
     widgets/JupyterWidget.h \
     utils/PythonAPI.h \
     utils/NestedIPyKernel.h \
-    dialogs/R2PluginsDialog.h
+    dialogs/R2PluginsDialog.h \
+    widgets/CutterDockWidget.h \
+    widgets/GraphWidget.h \
+    utils/JsonTreeItem.h \
+    utils/JsonModel.h
 
 FORMS    += \
     dialogs/AboutDialog.ui \

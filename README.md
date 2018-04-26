@@ -18,6 +18,9 @@ Cutter is not aimed at existing radare2 users. It instead focuses on those whose
 
 Cutter is available for all platforms (Linux, OS X, Windows).
 You can download the latest release [here](https://github.com/radareorg/cutter/releases).
+ *  Linux: use the [AppImage](https://github.com/radareorg/cutter/releases/download/v1.4/Cutter-v1.4-x86_64.AppImage) file. Then just make it executable and run it: 
+     * `chmod +x Cutter-v1.4-x86_64.AppImage`
+     * `./Cutter-v1.4-x86_64.AppImage`
 
 ### Building from source
 
@@ -31,7 +34,7 @@ Cutter is based on Qt so you will need to have it installed.
 
 First you must clone the repository:
 ```sh
-git clone https://github.com/radareorg/cutter
+git clone --recurse-submodules https://github.com/radareorg/cutter
 cd cutter
 ```
 
@@ -41,9 +44,7 @@ Building on linux:
 ```
 
 Building on Windows:
-```batch
-set ARCH=x64
-set PYTHON=C:\Python36-x64
+```
 prepare_r2.bat
 build.bat
 ```

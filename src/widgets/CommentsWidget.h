@@ -3,22 +3,21 @@
 
 #include <memory>
 
-#include <QDockWidget>
+#include "CutterDockWidget.h"
 
 class MainWindow;
 class QTreeWidgetItem;
 
-namespace Ui
-{
-    class CommentsWidget;
+namespace Ui {
+class CommentsWidget;
 }
 
-class CommentsWidget : public QDockWidget
+class CommentsWidget : public CutterDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit CommentsWidget(MainWindow *main, QWidget *parent = 0);
+    explicit CommentsWidget(MainWindow *main, QAction *action = nullptr);
     ~CommentsWidget();
 
 protected:

@@ -70,6 +70,11 @@ inline QString RSizeString(RVA size)
     return QString::asprintf("%lld", size);
 }
 
+inline QString RHexString(RVA size)
+{
+    return QString::asprintf("%#llx", size);
+}
+
 struct FunctionDescription {
     RVA offset;
     RVA size;
@@ -160,6 +165,7 @@ struct SectionDescription {
     RVA vsize;
     QString name;
     QString flags;
+    QString entropy;
 };
 
 struct EntrypointDescription {
@@ -270,6 +276,7 @@ Q_DECLARE_METATYPE(ResourcesDescription)
 Q_DECLARE_METATYPE(VTableDescription)
 Q_DECLARE_METATYPE(TypeDescription)
 Q_DECLARE_METATYPE(SearchDescription)
+Q_DECLARE_METATYPE(SectionDescription)
 
 class CutterCore: public QObject
 {
@@ -277,7 +284,7 @@ class CutterCore: public QObject
     friend class ccClass;
 
 public:
-    explicit CutterCore(QObject *parent = 0);
+    explicit CutterCore(QObject *parent = nullptr);
     ~CutterCore();
     static CutterCore *getInstance();
 
@@ -318,8 +325,8 @@ public:
     void setImmediateBase(const QString &r2BaseName, RVA offset = RVA_INVALID);
     void setCurrentBits(int bits, RVA offset = RVA_INVALID);
 
-    bool loadFile(QString path, uint64_t loadaddr = 0LL, uint64_t mapaddr = 0LL, int perms = R_IO_READ,
-                  int va = 0, int idx = 0, bool loadbin = false, const QString &forceBinPlugin = nullptr);
+    bool loadFile(QString path, ut64 baddr = 0LL, ut64 mapaddr = 0LL, int perms = R_IO_READ,
+                  int va = 0, bool loadbin = false, const QString &forceBinPlugin = nullptr);
     bool tryFile(QString path, bool rw);
     void analyze(int level, QList<QString> advanced);
 
@@ -364,8 +371,7 @@ public:
     QString assemble(const QString &code);
     QString disassemble(const QString &hex);
     QString disassembleSingleInstruction(RVA addr);
-    void setDefaultCPU();
-    void setCPU(QString arch, QString cpu, int bits, bool temporary = false);
+    void setCPU(QString arch, QString cpu, int bits);
     void setEndianness(bool big);
     void setBBSize(int size);
 
@@ -390,6 +396,8 @@ public:
     QString getDecompiledCode(RVA addr);
     QString getDecompiledCode(QString addr);
     QJsonDocument getFileInfo();
+    QJsonDocument getSignatureInfo();
+    QJsonDocument getFileVersionInfo();
     QStringList getStats();
     QString getSimpleGraph(QString function);
 
@@ -491,10 +499,6 @@ signals:
 public slots:
 
 private:
-    QString default_arch;
-    QString default_cpu;
-    int default_bits;
-
     MemoryWidgetType memoryWidgetPriority;
 
     QString notes;

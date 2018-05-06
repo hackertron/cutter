@@ -3,6 +3,9 @@
 #include "utils/Helpers.h"
 #include "utils/JsonModel.h"
 #include "utils/JsonTreeItem.h"
+#include "utils/TempConfig.h"
+#include "dialogs/VersionInfoDialog.h"
+
 
 #include "MainWindow.h"
 
@@ -59,7 +62,7 @@ void Dashboard::updateContents()
         this->ui->relroEdit->setText(relro);
     }
 
-    this->ui->baddrEdit->setText(QString::number(item2["baddr"].toDouble()));
+    this->ui->baddrEdit->setText("0x"+QString::number(Core()->get_baddr(), 16));
 
     if (item2["va"].toBool() == true) {
         this->ui->vaEdit->setText("True");
@@ -142,11 +145,26 @@ void Dashboard::updateContents()
     ui->verticalLayout_2->addSpacerItem(spacer);
 
     // Add entropy value
-    QString entropy = Core()->cmd("ph entropy").trimmed();
-    ui->lblEntropy->setText(entropy);
+    {
+        // Scope for TempConfig
+        TempConfig tempConfig;
+        tempConfig.set("io.va", false);
+        QString entropy = Core()->cmd("ph entropy $s @ 0").trimmed();
+        ui->lblEntropy->setText(entropy);
+    }
+
 
     // Get stats for the graphs
     QStringList stats = Core()->getStats();
+
+    // Check if signature info and version info available
+    if (Core()->getSignatureInfo().isEmpty()){
+        ui->certificateButton->setEnabled(false);
+    }
+    if (Core()->getFileVersionInfo().isEmpty()){
+        ui->versioninfoButton->setEnabled(false);
+    }
+
 }
 
 void Dashboard::on_certificateButton_clicked()
@@ -159,31 +177,38 @@ void Dashboard::on_certificateButton_clicked()
         viewDialog = new QDialog(this);
         view = new QTreeView(viewDialog);
         model = new JsonModel();
-        QJsonDocument qjsonCertificatesDoc = Core()->cmdj("iCj");
+        QJsonDocument qjsonCertificatesDoc = Core()->getSignatureInfo();
         qstrCertificates = qjsonCertificatesDoc.toJson(QJsonDocument::Compact);
     }
-    if (QString::compare("{}", qstrCertificates)) {
-        if (!viewDialog->isVisible()) {
-            std::string strCertificates = qstrCertificates.toUtf8().constData();
-            model->loadJson(QByteArray::fromStdString(strCertificates));
-            view->setModel(model);
-            view->expandAll();
-            view->resize(900, 600);
-            QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            sizePolicy.setHorizontalStretch(0);
-            sizePolicy.setVerticalStretch(0);
-            sizePolicy.setHeightForWidth(view->sizePolicy().hasHeightForWidth());
-            viewDialog->setSizePolicy(sizePolicy);
-            viewDialog->setMinimumSize(QSize(900, 600));
-            viewDialog->setMaximumSize(QSize(900, 600));
-            viewDialog->setSizeGripEnabled(false);
-            viewDialog->setWindowTitle("Certificates");
-            viewDialog->show();
-        }
-    } else {
-        QMessageBox msgBoxCertificateInf(QMessageBox::Information, "Certificate Information ",
-                                         "There is no certificate information",
-                                         QMessageBox::NoButton, this);
-        msgBoxCertificateInf.exec();
+    if (!viewDialog->isVisible()) {
+        std::string strCertificates = qstrCertificates.toUtf8().constData();
+        model->loadJson(QByteArray::fromStdString(strCertificates));
+        view->setModel(model);
+        view->expandAll();
+        view->resize(900, 600);
+        QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(view->sizePolicy().hasHeightForWidth());
+        viewDialog->setSizePolicy(sizePolicy);
+        viewDialog->setMinimumSize(QSize(900, 600));
+        viewDialog->setMaximumSize(QSize(900, 600));
+        viewDialog->setSizeGripEnabled(false);
+        viewDialog->setWindowTitle("Certificates");
+        viewDialog->show();
+    }
+}
+
+void Dashboard::on_versioninfoButton_clicked()
+{
+
+    static QDialog *infoDialog = nullptr;
+
+    if (!infoDialog){
+        infoDialog = new VersionInfoDialog(this);
+    }
+
+    if (!infoDialog->isVisible()) {
+        infoDialog->show();
     }
 }
